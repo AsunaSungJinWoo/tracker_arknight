@@ -1,0 +1,191 @@
+=== CATALOGUE DES ARMES ===
+
+ID: 1
+Nom: Vision ambitieuse (épée)
+Rarete: ******
+Attribut Principal: Agilité
+Stats Secondaires: ATQ accrue
+Competences: Altération
+------------------------------
+ID: 2
+Nom: Pas de repos (épée)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: ATQ accrue
+Competences: Flux
+------------------------------
+ID: 3
+Nom: Blessure forgée (épée)
+Rarete: ******
+Attribut Principal: intelligence
+Stats Secondaires: ATQ accrue
+Competences: Crépuscule
+------------------------------
+ID: 4
+Nom: Flambeau de l'ombre (épée)
+Rarete: ******
+Attribut Principal: Intelligence
+Stats Secondaires: DEG thermiques
+Competences: Altération
+------------------------------
+ID: 5
+Nom: Blessure forgée (épée)
+Rarete: ******
+Attribut Principal: Intelligence
+Stats Secondaires: ATQ accrue
+Competences: Crépuscule
+------------------------------
+ID: 6
+Nom: Asecnsion rapide (épée)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: taux crit
+Competences: Crépuscule
+------------------------------
+ID: 7
+Nom: coupe thermite (épée)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: ATQ accrue
+Competences: Flux
+------------------------------
+ID: 8
+Nom: Réputation éminente (épée)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: DEG physyques
+Competences: Brutalité
+------------------------------
+ID: 9
+Nom: Nova des nuits blanches (épée)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: Intensité des arts
+Competences: Altération
+------------------------------
+ID: 10
+Nom: Foudreberge (Espadon)
+Rarete: ******
+Attribut Principal: Force
+Stats Secondaires: PV accrue
+Competences: Cure
+------------------------------
+ID: 11
+Nom: Khravengger (Espadon)
+Rarete: ******
+Attribut Principal: Force
+Stats Secondaires: ATQ accrue
+Competences: Détonation
+------------------------------
+ID: 12
+Nom: Exemplaire (Espadon)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: ATQ accrue
+Competences: Suppression
+------------------------------
+ID: 13
+Nom: Raffinement ancien (Espadon)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: PV accrue
+Competences: Efficacité
+------------------------------
+ID: 14
+Nom: prince déchiré (Espadon)
+Rarete: ******
+Attribut Principal: Force
+Stats Secondaires: Taux crit
+Competences: Broyage
+------------------------------
+ID: 15
+Nom: Porte-montagne (Arme d'hast)
+Rarete: ******
+Attribut Principal: Agilité
+Stats Secondaires: DEG physiques
+Competences: Efficacité
+------------------------------
+ID: 16
+Nom: Vaillance (Arme d'hast)
+Rarete: ******
+Attribut Principal: Agilité
+Stats Secondaires: DEG physiques
+Competences: Combativité
+------------------------------
+ID: 17
+Nom: JET (Arme d'hast)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: ATQ accrue
+Competences: Suppression
+------------------------------
+ID: 18
+Nom: Tyran de l'art (Canon portatif)
+Rarete: ******
+Attribut Principal: Intelligence
+Stats Secondaires: Taux crit
+Competences: Fracture
+------------------------------
+ID: 19
+Nom: Navigatrice (Canon portatif)
+Rarete: ******
+Attribut Principal: Intelligence
+Stats Secondaires: DEG cryo
+Competences: Altération
+------------------------------
+ID: 20
+Nom: Pivot (Canon portatif)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: Taux crit
+Competences: Altération
+------------------------------
+ID: 21
+Nom: Clannibale (Canon portatif)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: Arts accrue
+Competences: Altération
+------------------------------
+ID: 22
+Nom: Livraison garantie (Unité des arts)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: Vitesse de gain d'ult
+Competences: Poursuite
+------------------------------
+ID: 23
+Nom: Reves de plage étoilée (Unité des arts)
+Rarete: ******
+Attribut Principal: Intelligence
+Stats Secondaires: Efficacité des soins 
+Competences: Altération
+------------------------------
+ID: 24
+Nom: Opus (Unité des arts)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: DEG naturel
+Competences: Supprssion
+------------------------------
+ID: 25
+Nom: Unité de détonation (Unité des arts)
+Rarete: ******
+Attribut Principal: Trait principal
+Stats Secondaires: Intensité des arts
+Competences: Détonation
+------------------------------
+ID: 26
+Nom: oubli (Unité des arts)
+Rarete: ******
+Attribut Principal: Intelligences
+Stats Secondaires: arts accrue
+Competences: Crépuscule
+------------------------------
+ID: 27
+Nom: Vertus chevaleres (Unité des arts)
+Rarete: ******
+Attribut Principal: Volonté
+Stats Secondaires: PV accrue
+Competences: Cure
+------------------------------
