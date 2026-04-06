@@ -1,216 +1,317 @@
 ﻿# -*- coding: utf-8 -*-
-#___________________________________________importation des library_______________________________________________
 import sqlite3
-import mss
-import pytesseract
-from PIL import Image      
-#___________________________________________________fonction_____________________________________________________
+import os
+import csv
+
+# Note: mss, pytesseract et PIL sont importés mais non utilisés dans cette logique de base
+# import mss
+# import pytesseract
+# from PIL import Image      
+
+# ___________________________________________________ GLOBALES _____________________________________________________
+DB_NAME = ""
+
+# ___________________________________________________ FONCTIONS _____________________________________________________
 
 def connexion():
-    return sqlite3.connect("BDD_armes.db")
+    return sqlite3.connect(DB_NAME)
 
-def cree_table_arknight_endfield():
-    try:
-        with connexion() as conn:
-            cursor = conn.cursor()
-            cursor.execute("PRAGMA foreign_keys = ON")
+def cree_table_base(table):
+    """Initialise la structure des tables pour le jeu actuel."""
+    if(table == "Arknigts_Endfield"):
+        try:
+            with connexion() as conn:
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS stat_principal(
-                    id_principal INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Attribut_principal TEXT NOT NULL
-                )""")
+                cursor.execute("CREATE TABLE IF NOT EXISTS stat_principal  (id_principal   INTEGER PRIMARY KEY AUTOINCREMENT, Attribut_principal         TEXT NOT NULL)")
+                cursor.execute("CREATE TABLE IF NOT EXISTS stat_secondaire (id_secondaire  INTEGER PRIMARY KEY AUTOINCREMENT, Statistique_secondaires    TEXT NOT NULL)")
+                cursor.execute("CREATE TABLE IF NOT EXISTS Competences     (id_competences INTEGER PRIMARY KEY AUTOINCREMENT, Statistique_de_competences TEXT NOT NULL)")
+                cursor.execute("CREATE TABLE IF NOT EXISTS Type_arme       (id_type        INTEGER PRIMARY KEY AUTOINCREMENT, Type_arme                  TEXT NOT NULL)")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS stat_secondaire(
-                    id_secondaire INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Statistique_secondaires TEXT NOT NULL
-                )""")
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS Armes(
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          Nom_armes TEXT NOT NULL,
+                          Rarete INTEGER NOT NULL,
+                          Possetion TEXT,
+                          id_type INTEGER NOT NULL,
+                          id_principal INTEGER NOT NULL,
+                          id_secondaire INTEGER NOT NULL,
+                          id_competences INTEGER NOT NULL,
+                          FOREIGN KEY (id_type)        REFERENCES Type_arme(id_type),
+                          FOREIGN KEY (id_principal)   REFERENCES stat_principal(id_principal),
+                          FOREIGN KEY (id_secondaire)  REFERENCES stat_secondaire(id_secondaire),
+                          FOREIGN KEY (id_competences) REFERENCES Competences(id_competences)
+                     )"""
+                )
+                conn.commit()
+                print(f"Base de données Arknight Endfield prête !")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS Competences(
-                    id_competences INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Statistique_de_competences TEXT NOT NULL
-                )""")
+        except Exception as e:
+            print(f"Erreur initialisation table arknight endfield : {e}")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS Type_arme(
-                    id_type INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Type_arme TEXT NOT NULL
-                )""")
+    elif(table == "Arknights") : 
+        try:
+            with connexion() as conn:
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON")
+                cursor.execute("CREATE TABLE IF NOT EXISTS rareter   (id_rareter   INTEGER PRIMARY KEY, rareter   TEXT)")
+                cursor.execute("CREATE TABLE IF NOT EXISTS potentiel (id_potentiel INTEGER PRIMARY KEY, potentiel INTEGER)")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS Armes(
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      Nom_armes TEXT NOT NULL,
-                      Rarete INTEGER NOT NULL,
-                      Possetion TEXT,
-                      id_type INTEGER NOT NULL,
-                      id_principal INTEGER NOT NULL,
-                      id_secondaire INTEGER NOT NULL,
-                      id_competences INTEGER NOT NULL,
-                      FOREIGN KEY (id_type)        REFERENCES Type_arme(id_type),
-                      FOREIGN KEY (id_principal)   REFERENCES stat_principal(id_principal),
-                      FOREIGN KEY (id_secondaire)  REFERENCES stat_secondaire(id_secondaire),
-                      FOREIGN KEY (id_competences) REFERENCES Competences(id_competences)
-                 )""")
-            conn.commit()
-            print("Tables crees avec succes !")
-    except Exception as e:
-        print(f"Erreur pendant la creation des tables : {e}")
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS operator (
+                        id_operator INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nom TEXT,
+                        id_rareter INTEGER,
+                        id_potentiel INTEGER,
+                        FOREIGN KEY(id_rareter) REFERENCES rareter(id_rareter),
+                        FOREIGN KEY(id_potentiel) REFERENCES potentiel(id_potentiel)
+                    )"""
+                )
 
-def insere_donnees(nom, type_arme, rarete, attribut_principal, stats_secondaires, stats_competences):
-    try:
-        with connexion() as conn:
-            cursor = conn.cursor()
-            cursor.execute("PRAGMA foreign_keys = ON")
+                tables_tags = ['class', 'qualification', 'position', 'affix']
 
-            cursor.execute("INSERT INTO Type_arme (Type_arme) VALUES (?)", (type_arme,))
-            id_type = cursor.lastrowid
+                for table in tables_tags:
+                    cursor.execute(f"CREATE TABLE IF NOT EXISTS {table} (id_{table} INTEGER PRIMARY KEY, nom_{table} TEXT)")
 
-            cursor.execute("INSERT INTO stat_principal (Attribut_principal) VALUES (?)", (attribut_principal,))
-            id_principal = cursor.lastrowid
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS operator_tags (
+                        id_operator INTEGER,
+                        source_table TEXT, -- 'class', 'position', etc.
+                        id_tag INTEGER,
+                        FOREIGN KEY(id_operator) REFERENCES operator(id_operator)
+                    )"""
+                )
+            print(f"Base Arknights prête !")
+        except Exception as e:
+            print(f"Erreur initialisation table arknight : {e}")
 
-            cursor.execute("INSERT INTO stat_secondaire (Statistique_secondaires) VALUES (?)", (stats_secondaires,))
-            id_secondaire = cursor.lastrowid
 
-            cursor.execute("INSERT INTO Competences (Statistique_de_competences) VALUES (?)", (stats_competences,))
-            id_competences = cursor.lastrowid
 
-            cursor.execute("""
-                INSERT INTO Armes (Nom_armes, Rarete, Possetion, id_type, id_principal, id_secondaire, id_competences)
-                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (nom, rarete, None, id_type, id_principal, id_secondaire, id_competences))
 
-            conn.commit()
-            print("Arme ajoutee avec succes !")
-    except Exception as e:
-        print(f"Erreur pendant l'insertion : {e}")
-
-def modifier_donnees():
-    try:
-        while True:
-            armes = Selection_de_donnees()
-            if armes:
-                for items in armes:
-                    print(f"ID:{items[0]} | {items[1]}")
-            else:
-                print("Aucune arme trouvee.")
-                return
-
-            id_arme = input("Entre l'ID de l'arme a modifier (0 pour quitter) : ")
-
-            if id_arme == "0":
-                break
-
-            choix = input("\nQue voulez-vous modifier ?\n"
-                          "1 : Nom\n"
-                          "2 : Rarete\n"
-                          "> ")
-
-            colonnes = {
-                "1": "Nom_armes",
-                "2": "Rarete",
-            }
-
-            if choix in colonnes:
-                nouvelle_valeur = input("Nouvelle valeur : ")
-                with connexion() as conn:
-                    cursor = conn.cursor()
-                    sql = f"UPDATE Armes SET {colonnes[choix]} = ? WHERE id = ?"
-                    cursor.execute(sql, (nouvelle_valeur, id_arme))
-                    conn.commit()
-                    print("Arme modifiee avec succes !")
-            else:
-                print("Choix invalide !")
-
-    except Exception as e:
-        print(f"Erreur lors de la modification : {e}")
-
-def Selection_de_donnees():
-    try:
-        with connexion() as conn:
-            cursor = conn.cursor()
-            sql = """
-                SELECT Armes.id, Armes.Nom_armes, Type_arme.Type_arme, Armes.Rarete, 
-                       stat_principal.Attribut_principal, 
-                       stat_secondaire.Statistique_secondaires, 
-                       Competences.Statistique_de_competences
-                FROM Armes
-                JOIN Type_arme       ON Armes.id_type       = Type_arme.id_type
-                JOIN stat_principal  ON Armes.id_principal  = stat_principal.id_principal
-                JOIN stat_secondaire ON Armes.id_secondaire = stat_secondaire.id_secondaire
-                JOIN Competences     ON Armes.id_competences= Competences.id_competences
-            """
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-            return rows
-    except Exception as e:
-        print(f"Erreur lors de la selection : {e}")
-        return None
-
-def exporter_en_txt():
-    armes = Selection_de_donnees()
-    if not armes:
-        print("Aucune donnee a exporter.")
+def importer_csv(dossier_csv="donnees_csv"):
+    """
+    Parcourt tous les fichiers .csv d'un dossier et remplit les tables correspondantes.
+    """
+    if not os.path.exists(dossier_csv):
+        print(f"Erreur : Le dossier '{dossier_csv}' n'existe pas.")
         return
+
     try:
-        with open("liste_armes.txt", "w", encoding="utf-8") as f:
-            f.write("=== CATALOGUE DES ARMES ===\n\n")
-            for item in armes:
-                etoiles = "*" * int(item[3])
-                f.write(f"ID: {item[0]}\n")
-                f.write(f"Nom: {item[1]} ({item[2]})\n")
-                f.write(f"Rarete: {etoiles}\n")
-                f.write(f"Attribut Principal: {item[4]}\n")
-                f.write(f"Stats Secondaires: {item[5]}\n")
-                f.write(f"Competences: {item[6]}\n")
-                f.write("-" * 30 + "\n")
-        print("Donnees exportees dans 'liste_armes.txt' !")
+        with connexion() as conn:
+            cursor = conn.cursor()
+            
+            # --- ÉTAPE 1 : Remplir les tables de base (Tags, Rareté, Potentiel) ---
+            # On liste les tables simples qui n'ont pas de dépendances
+            tables_simples = ['rareter', 'potentiel', 'class', 'qualification', 'position', 'affix']
+            
+            for table in tables_simples:
+                chemin = os.path.join(dossier_csv, f"{table}.csv")
+                if os.path.exists(chemin):
+                    with open(chemin, mode='r', encoding='utf-8') as f:
+                        reader = csv.reader(f, delimiter=';')
+                        next(reader) # Saute l'entête
+                        for row in reader:
+                            # Génère dynamiquement la requête INSERT INTO table VALUES (?, ?)
+                            placeholders = ", ".join(["?"] * len(row))
+                            cursor.execute(f"INSERT OR IGNORE INTO {table} VALUES ({placeholders})", row)
+                    print(f"Table '{table}' mise à jour.")
+
+            # --- ÉTAPE 2 : Remplir la table 'operator' ---
+            chemin_ops = os.path.join(dossier_csv, "operator.csv")
+            if os.path.exists(chemin_ops):
+
+                # ── Vide et réinsère proprement à chaque import ──
+                cursor.execute("DELETE FROM operator")
+                cursor.execute("DELETE FROM operator_tags")  # cascade manuelle
+
+                with open(chemin_ops, mode='r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f, delimiter=';')
+                    for row in reader:
+                        cursor.execute(
+                            "INSERT INTO operator (id_operator, nom, id_rareter, id_potentiel) VALUES (?, ?, ?, ?)",
+                            (row['id_operator'], row['nom'], row['id_rareter'], row['id_potentiel'])
+                        )
+                print("Table 'operator' mise à jour.")
+
+            # --- ÉTAPE 3 : operator_tags ---
+            chemin_tags = os.path.join(dossier_csv, "operator_tags.csv")
+            if os.path.exists(chemin_tags):
+                cursor.execute("DELETE FROM operator_tags")
+
+                with open(chemin_tags, mode='r', encoding='utf-8-sig') as f:
+                    lignes = list(csv.DictReader(f, delimiter=';'))
+
+                if not lignes:
+                    print("  operator_tags.csv est vide.")
+                else:
+                    inseres = 0
+                    ignores = 0
+                    for row in lignes:
+                        id_op    = int(row['id_operator'])
+                        source   = row['source_table'].strip()
+                        id_tag   = int(row['id_tag'])
+
+                        # Vérifie que l'opérateur existe
+                        cursor.execute("SELECT 1 FROM operator WHERE id_operator = ?", (id_op,))
+                        if not cursor.fetchone():
+                            ignores += 1
+                            continue
+
+                        cursor.execute(
+                            "INSERT OR IGNORE INTO operator_tags (id_operator, source_table, id_tag) VALUES (?, ?, ?)",
+                            (id_op, source, id_tag)
+                        )
+                        inseres += 1
+
+                    print(f"  ✔ operator_tags : {inseres} ligne(s) insérée(s), {ignores} ignorée(s).")
+                    if ignores > 0:
+                        print(f"     → {ignores} id_operator introuvables dans la table operator.")
+
+                conn.commit()
+                print("\n  ✔ Import terminé !")
+
     except Exception as e:
-        print(f"Erreur lors de l'ecriture : {e}")
+        print(f"Erreur lors de l'import complet : {e}")
 
 
-#_______________________________________main____________________________________________________________
+def recuperer_liste_tags():
+    tags_disponibles = {}
+    tables = ['class', 'qualification', 'position', 'affix']
+    try:
+        with connexion() as conn:
+            cursor = conn.cursor()
+            for table in tables:
+                cursor.execute(f"SELECT nom_{table} FROM {table}")
+                # On stocke { 'Medic': 'class', 'Ranged': 'position', ... }
+                for row in cursor.fetchall():
+                    tags_disponibles[row[0]] = table
+        return tags_disponibles
+    except:
+        return {}
+
+
+# _______________________________________ MAIN ____________________________________________________________
+
+
 while True:
-    val = input("\n________________menu_______________\n"
-                "\n quitter : 0\n"
-                "\n cree une table //init : 1\n"
-                "\n ajouter une arme : 2\n"
-                "\n modifier une valeur : 3\n"
-                "\n recupere des donnees : 4\n"
-                "\n exporter en fichier texte : 5\n")
+    print("\n=== BIENVENUE DANS LE TRACKER ===")
+    choix_jeu = input("1: Arknights\n2: Arknights Endfield\n0: Quitter\n> ")
+
+    if choix_jeu == "0": break
     
-    if val == "0":
-        break
-    elif val == "1":
-        cree_table_arknight_endfield()
-    elif val == "2":
-        nom = input("Nom de l'arme : ")
+    if choix_jeu == "1":
+        DB_NAME = "BDD_Arknights.db"
+        jeu_key = "Arknights"
+    else:
+        DB_NAME = "BDD_Arknights_Endfield.db"
+        jeu_key = "Arknights_Endfield"
 
-        while True:
-            rarete_input = input("Rarete (4, 5 ou 6 etoiles) : ")
-            if rarete_input in ("4", "5", "6"):
-                rarete = int(rarete_input)
-                break
+    while True:
+        print(f"\n--- Menu [{DB_NAME}] ---")
+        print("1: Initialiser les tables")
+        print("2: Ajouter une donnée")
+        print("3: Afficher les données")
+        print("4: Retour au choix du jeu")
+        val = input("> ")
+
+
+        if val == "1":
+            cree_table_base(jeu_key)
+        
+        elif val == "2":
+            if jeu_key == "Arknights":
+                print("1: Ajouter via CSV (Auto)")
+                print("2: Ajouter à la main")
+                choix = input("> ")
+
+                if choix == "1":
+                    importer_csv("donnees_csv")
+
+                elif choix == "2":
+                    # _________________________________________Ta logique manuelle habituelle..._______________________________________________________________________
+                    pass
+
             else:
-                print("Erreur : entre uniquement 4, 5 ou 6 !")
+                #_____________________________________________________________ Logique insertion armes Endfield___________________________________________________________________
+                print("Fonction insertion arme à appeler ici...")
+        
+        elif val == "3":
+            if jeu_key == "Arknights":
+                print("\n--- OPTIONS D'AFFICHAGE ---")
+                print("1: Afficher TOUT")
+                print("2: Filtrer par un TAG spécifique")
+                sub_choix = input("> ")
 
-        type_armes = input("Type armes : ")
-        attr = input("Attribut principal : ")
-        sec  = input("Statistique secondaire : ")
-        comp = input("Statistique de competence : ")
+                tag_filtre = None
+                if sub_choix == "2":
+                    tags_dict = recuperer_liste_tags()
+                    liste_noms = sorted(list(tags_dict.keys()))
+                    for i, t in enumerate(liste_noms):
+                        print(f"{i}: {t}")
+                    try:
+                        idx = int(input("Numéro du tag : "))
+                        tag_filtre = liste_noms[idx]
+                    except:
+                        print("Choix invalide."); continue
 
-        insere_donnees(nom, type_armes, rarete, attr, sec, comp)
-    elif val == "3":
-        modifier_donnees()
-    elif val == "4":
-        armes = Selection_de_donnees()
-        if armes:
-            for items in armes:
-                etoiles = "*" * int(items[3])
-                print(f"ID:{items[0]} | {items[1]} | {items[2]} | {etoiles} | {items[4]} | {items[5]} | {items[6]}")
-        else:
-            print("Aucune arme trouvee.")
-    elif val == "5":
-        exporter_en_txt()
+                with connexion() as conn:
+                    conn.row_factory = sqlite3.Row
+                    cursor = conn.cursor()
+
+                    # ── Étape 1 : récupère tous les opérateurs ───────────
+                    cursor.execute("""
+                        SELECT o.id_operator, o.nom, r.rareter
+                        FROM operator o
+                        LEFT JOIN rareter r ON o.id_rareter = r.id_rareter
+                        ORDER BY o.id_rareter DESC, o.nom ASC
+                    """)
+                    operateurs = cursor.fetchall()   # tout en mémoire, curseur libre
+
+                    # ── Étape 2 : récupère TOUS les tags d'un coup ───────
+                    cursor.execute("""
+                        SELECT ot.id_operator,
+                               CASE ot.source_table
+                                   WHEN 'class'         THEN cl.nom_class
+                                   WHEN 'position'      THEN po.nom_position
+                                   WHEN 'qualification' THEN qu.nom_qualification
+                                   WHEN 'affix'         THEN af.nom_affix
+                               END AS tag_nom
+                        FROM operator_tags ot
+                        LEFT JOIN class         cl ON ot.source_table='class'         AND ot.id_tag=cl.id_class
+                        LEFT JOIN position      po ON ot.source_table='position'      AND ot.id_tag=po.id_position
+                        LEFT JOIN qualification qu ON ot.source_table='qualification' AND ot.id_tag=qu.id_qualification
+                        LEFT JOIN affix         af ON ot.source_table='affix'         AND ot.id_tag=af.id_affix
+                        WHERE tag_nom IS NOT NULL
+                    """)
+                    tags_rows = cursor.fetchall()   # tout en mémoire aussi
+
+                # ── Étape 3 : regroupe les tags par opérateur en Python ──
+                tags_par_op = {}
+                for row in tags_rows:
+                    id_op = row["id_operator"]
+                    if id_op not in tags_par_op:
+                        tags_par_op[id_op] = set()
+                    tags_par_op[id_op].add(row["tag_nom"].strip())
+
+                # ── Étape 4 : affichage ───────────────────────────────────
+                print(f"\n{'NOM':<22} | {'RARETÉ':<8} | TAGS")
+                print("-" * 75)
+                affiches = 0
+                for op in operateurs:
+                    id_op  = op["id_operator"]
+                    nom    = op["nom"]
+                    rarete = op["rareter"] if op["rareter"] else "?"
+                    tags   = tags_par_op.get(id_op, set())
+
+                    if tag_filtre and tag_filtre not in tags:
+                        continue
+
+                    t_str = ", ".join(sorted(tags)) if tags else "Aucun tag"
+                    print(f"{nom:<22} | {str(rarete):<8} | {t_str}")
+                    affiches += 1
+
+                print(f"\n  Total : {affiches} opérateur(s)")
+
+        elif val == "4": break

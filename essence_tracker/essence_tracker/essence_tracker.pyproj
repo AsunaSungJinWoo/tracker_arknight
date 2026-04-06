@@ -24,7 +24,8 @@
     <Compile Include="essence_tracker.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BDD_armes.db" />
+    <Content Include="BDD_Arknights.db" />
+    <Content Include="BDD_Arknight_Endfield.db" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
